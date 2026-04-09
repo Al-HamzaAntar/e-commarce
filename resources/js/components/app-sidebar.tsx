@@ -9,12 +9,12 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'لوحة التحكم',
         url: '/dashboard',
         icon: LayoutGrid,
     },
     {
-        title: 'Visit Store',
+        title: 'زيارة المتجر',
         url: '/',
         icon: Store,
     },

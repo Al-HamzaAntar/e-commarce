@@ -6,8 +6,8 @@ export default function AppLogo() {
             <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-xl">
                 <ShoppingBag className="size-4" />
             </div>
-            <div className="ml-1.5 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-none font-bold tracking-tight">ShopVibe</span>
+            <div className="mr-1.5 grid flex-1 text-right text-sm">
+                <span className="mb-0.5 truncate leading-none font-bold tracking-tight">شوب فايب</span>
             </div>
         </>
     );
