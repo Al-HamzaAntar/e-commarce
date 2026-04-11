@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -67,6 +67,9 @@ function BreadcrumbSeparator({
   className,
   ...props
 }: React.ComponentProps<"li">) {
+  const isRTL = document.documentElement.dir === 'rtl';
+  const Chevron = isRTL ? ChevronLeft : ChevronRight;
+
   return (
     <li
       data-slot="breadcrumb-separator"
@@ -75,7 +78,7 @@ function BreadcrumbSeparator({
       className={cn("[&>svg]:size-3.5", className)}
       {...props}
     >
-      {children ?? <ChevronRight />}
+      {children ?? <Chevron />}
     </li>
   )
 }

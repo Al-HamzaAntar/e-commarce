@@ -1,6 +1,6 @@
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronLeft, Headphones, Heart, Menu, RotateCcw, Search, Shield, ShoppingBag, Sparkles, Star, Truck, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Headphones, Heart, Menu, RotateCcw, Search, Shield, ShoppingBag, Sparkles, Star, Truck, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface Product {
@@ -261,7 +261,11 @@ export default function Home({ products }: HomeProps) {
                                     className="group bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/30 flex w-full items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold shadow-lg transition-all hover:shadow-xl sm:w-auto"
                                 >
                                     تسوق الآن
-                                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                                    {document.documentElement.dir === 'rtl' ? (
+                                        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                                    ) : (
+                                        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                                    )}
                                 </button>
                                 <button className="border-border text-foreground hover:bg-accent w-full rounded-xl border px-7 py-3.5 text-sm font-semibold transition-all sm:w-auto">
                                     عرض المجموعات

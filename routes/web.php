@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProductController;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -10,6 +11,9 @@ use Inertia\Inertia;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Product management routes
+    Route::resource('products', ProductController::class);
+
     Route::get('dashboard', function () {
         $totalProducts = Product::count();
         $totalUsers = User::count();
