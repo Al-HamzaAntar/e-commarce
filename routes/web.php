@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Models\Product;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -8,7 +11,34 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        $totalProducts = Product::count();
+        $totalUsers = User::count();
+        $inventoryValue = Product::sum(DB::raw('price * stock'));
+        $lowStockProducts = Product::where('stock', '<', 10)->count();
+
+        $stats = [
+            ['title' => 'قيمة المخزون', 'value' => '$'.number_format($inventoryValue, 2), 'change' => '+0.0%', 'type' => 'revenue'],
+            ['title' => 'المنتجات', 'value' => (string) $totalProducts, 'change' => '+0%', 'type' => 'products'],
+            ['title' => 'العملاء', 'value' => (string) $totalUsers, 'change' => '+0%', 'type' => 'customers'],
+            ['title' => 'المخزون المنخفض', 'value' => (string) $lowStockProducts, 'change' => '+0%', 'type' => 'lowStock'],
+        ];
+
+        $recentProducts = Product::latest()
+            ->take(5)
+            ->get(['id', 'name', 'price', 'category', 'stock', 'updated_at'])
+            ->map(function (Product $product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'category' => $product->category,
+                    'stock' => $product->stock,
+                    'updated_at' => $product->updated_at->toDateString(),
+                ];
+            })
+            ->toArray();
+
+        return Inertia::render('dashboard', compact('stats', 'recentProducts'));
     })->name('dashboard');
 });
 
