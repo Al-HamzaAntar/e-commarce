@@ -16,14 +16,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', function () {
         $totalProducts = Product::count();
-        $totalUsers = User::count();
+        $totalCustomers = User::where('role', 'customer')->count();
         $inventoryValue = Product::sum(DB::raw('price * stock'));
         $lowStockProducts = Product::where('stock', '<', 10)->count();
 
         $stats = [
             ['title' => 'قيمة المخزون', 'value' => '$'.number_format($inventoryValue, 2), 'change' => '+0.0%', 'type' => 'revenue'],
             ['title' => 'المنتجات', 'value' => (string) $totalProducts, 'change' => '+0%', 'type' => 'products'],
-            ['title' => 'العملاء', 'value' => (string) $totalUsers, 'change' => '+0%', 'type' => 'customers'],
+            ['title' => 'العملاء', 'value' => (string) $totalCustomers, 'change' => '+0%', 'type' => 'customers'],
             ['title' => 'المخزون المنخفض', 'value' => (string) $lowStockProducts, 'change' => '+0%', 'type' => 'lowStock'],
         ];
 
