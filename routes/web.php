@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/cart', function () {
+    return Inertia::render('Cart');
+})->name('cart');
+Route::get('/favorites', function () {
+    return Inertia::render('Favorites');
+})->name('favorites');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Product management routes

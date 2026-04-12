@@ -31,6 +31,12 @@ interface ProductSlide extends Product {
     discountedPrice: number;
 }
 
+interface CartItem extends ProductSlide {
+    quantity: number;
+}
+
+type FavoriteSlide = (ProductSlide & { slideType: 'product' }) | (HeroItem & { slideType: 'hero' });
+
 type HeroSlide = HeroItem | ProductSlide;
 
 interface HomeProps {
@@ -46,6 +52,9 @@ export default function Home({ products, heroItems }: HomeProps) {
     const [selectedCategory, setSelectedCategory] = useState<string>('الكل');
     const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
     const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [favoriteItems, setFavoriteItems] = useState<FavoriteSlide[]>([]);
+    const [isHeroPaused, setIsHeroPaused] = useState(false);
     const heroSliderRef = useRef<HTMLDivElement | null>(null);
 
     const categories = useMemo(() => {
@@ -68,13 +77,81 @@ export default function Home({ products, heroItems }: HomeProps) {
 
     const isProductSlide = (item: HeroSlide): item is ProductSlide => 'discount' in item;
 
+    const toFavoriteSlide = (item: HeroSlide): FavoriteSlide =>
+        isProductSlide(item) ? { ...item, slideType: 'product' } : { ...item, slideType: 'hero' };
+
+    const saveCartItems = (items: CartItem[]) => {
+        setCartItems(items);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ecomm_cart', JSON.stringify(items));
+        }
+    };
+
+    const saveFavoriteItems = (items: FavoriteSlide[]) => {
+        setFavoriteItems(items);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('ecomm_favorites', JSON.stringify(items));
+        }
+    };
+
+    const addToCart = (product: ProductSlide) => {
+        const existing = cartItems.find((item) => item.id === product.id);
+        const nextItems = existing
+            ? cartItems.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
+            : [...cartItems, { ...product, quantity: 1 }];
+
+        saveCartItems(nextItems);
+    };
+
+    const toggleFavorite = (item: HeroSlide) => {
+        const favorite = toFavoriteSlide(item);
+        const exists = favoriteItems.some((fav) => fav.id === favorite.id && fav.slideType === favorite.slideType);
+        const nextItems = exists
+            ? favoriteItems.filter((fav) => !(fav.id === favorite.id && fav.slideType === favorite.slideType))
+            : [...favoriteItems, favorite];
+
+        saveFavoriteItems(nextItems);
+    };
+
+    const isFavorite = (item: HeroSlide) => {
+        const favorite = toFavoriteSlide(item);
+        return favoriteItems.some((fav) => fav.id === favorite.id && fav.slideType === favorite.slideType);
+    };
+
+    const scrollToHeroIndex = (index: number) => {
+        if (!heroSliderRef.current) return;
+        const card = heroSliderRef.current.children[index] as HTMLElement | undefined;
+        card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    };
+
     const handleHeroSlide = (direction: 'prev' | 'next') => {
         if (!heroSliderRef.current) return;
-        const container = heroSliderRef.current;
-        const scrollWidth = container.clientWidth - 96;
-        const scrollTo = direction === 'prev' ? container.scrollLeft - scrollWidth : container.scrollLeft + scrollWidth;
-        container.scrollTo({ left: scrollTo, behavior: 'smooth' });
+        const nextIndex = direction === 'prev' ? heroSlideIndex - 1 : heroSlideIndex + 1;
+        const boundedIndex = (nextIndex + heroCards.length) % heroCards.length;
+        scrollToHeroIndex(boundedIndex);
     };
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const savedCart = localStorage.getItem('ecomm_cart');
+        if (savedCart) {
+            try {
+                setCartItems(JSON.parse(savedCart));
+            } catch {
+                setCartItems([]);
+            }
+        }
+
+        const savedFavorites = localStorage.getItem('ecomm_favorites');
+        if (savedFavorites) {
+            try {
+                setFavoriteItems(JSON.parse(savedFavorites));
+            } catch {
+                setFavoriteItems([]);
+            }
+        }
+    }, []);
 
     useEffect(() => {
         if (!heroSliderRef.current) return;
@@ -91,6 +168,22 @@ export default function Home({ products, heroItems }: HomeProps) {
 
         return () => container.removeEventListener('scroll', onScroll);
     }, [heroCards.length]);
+
+    useEffect(() => {
+        if (heroCards.length <= 1 || !heroSliderRef.current) return;
+        const interval = window.setInterval(() => {
+            if (isHeroPaused) {
+                return;
+            }
+            setHeroSlideIndex((currentIndex) => {
+                const nextIndex = (currentIndex + 1) % heroCards.length;
+                scrollToHeroIndex(nextIndex);
+                return nextIndex;
+            });
+        }, 5000);
+
+        return () => window.clearInterval(interval);
+    }, [heroCards.length, isHeroPaused]);
 
     const filteredProducts = useMemo(() => {
         let result = products;
@@ -174,24 +267,31 @@ export default function Home({ products, heroItems }: HomeProps) {
                                     <Search className="h-5 w-5" />
                                 </button>
 
-                                {/* المفضلة */}
-                                <button
-                                    className="text-foreground/70 hover:bg-accent hover:text-foreground hidden rounded-lg p-2 transition-colors sm:inline-flex"
+                                <Link
+                                    href={route('favorites')}
+                                    className="text-foreground/70 hover:bg-accent hover:text-foreground relative hidden rounded-lg p-2 transition-colors sm:inline-flex"
                                     aria-label="المفضلة"
                                 >
                                     <Heart className="h-5 w-5" />
-                                </button>
+                                    {favoriteItems.length > 0 && (
+                                        <span className="bg-primary text-primary-foreground absolute -top-0.5 -left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold">
+                                            {favoriteItems.length}
+                                        </span>
+                                    )}
+                                </Link>
 
-                                {/* سلة التسوق */}
-                                <button
+                                <Link
+                                    href={route('cart')}
                                     className="text-foreground/70 hover:bg-accent hover:text-foreground relative rounded-lg p-2 transition-colors"
                                     aria-label="سلة التسوق"
                                 >
                                     <ShoppingBag className="h-5 w-5" />
-                                    <span className="bg-primary text-primary-foreground absolute -top-0.5 -left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold">
-                                        0
-                                    </span>
-                                </button>
+                                    {cartItems.length > 0 && (
+                                        <span className="bg-primary text-primary-foreground absolute -top-0.5 -left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold">
+                                            {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                                        </span>
+                                    )}
+                                </Link>
 
                                 {/* روابط المصادقة */}
                                 <div className="border-border/50 mr-1 hidden items-center gap-2 border-r pr-3 sm:flex">
@@ -347,10 +447,12 @@ export default function Home({ products, heroItems }: HomeProps) {
 
                             <div
                                 ref={heroSliderRef}
+                                onMouseEnter={() => setIsHeroPaused(true)}
+                                onMouseLeave={() => setIsHeroPaused(false)}
                                 className="scrollbar-none mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-2 pb-2"
                             >
                                 {heroCards.length > 0 ? (
-                                    heroCards.map((item, index) => {
+                                    heroCards.map((item) => {
                                         const isProduct = isProductSlide(item);
                                         return (
                                             <div
@@ -398,6 +500,29 @@ export default function Home({ products, heroItems }: HomeProps) {
                                                             </a>
                                                         )
                                                     )}
+
+                                                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                                                        {isProduct && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => addToCart(item)}
+                                                                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl px-4 py-2 text-sm font-semibold transition-colors"
+                                                            >
+                                                                إضافة للعربة
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => toggleFavorite(item)}
+                                                            className={`rounded-2xl px-4 py-2 text-sm font-semibold transition-colors ${
+                                                                isFavorite(item)
+                                                                    ? 'bg-accent text-foreground hover:bg-accent/90'
+                                                                    : 'border-border/70 bg-card text-foreground hover:bg-accent hover:text-foreground border'
+                                                            }`}
+                                                        >
+                                                            {isFavorite(item) ? 'إزالة من المفضلة' : 'أضف للمفضلة'}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
