@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('dashboard', function () {
         $totalProducts = Product::count();
-        $totalCustomers = User::where('role', 'customer')->count();
+        $totalCustomers = User::where('role', 'client')->count();
         $inventoryValue = Product::sum(DB::raw('price * stock'));
         $lowStockProducts = Product::where('stock', '<', 10)->count();
 
