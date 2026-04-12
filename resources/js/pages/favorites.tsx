@@ -43,6 +43,42 @@ export default function Favorites() {
         }
     }, []);
 
+    // Listen for localStorage changes to sync favorites state across pages
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'ecomm_favorites' && e.newValue) {
+                try {
+                    setFavoriteItems(JSON.parse(e.newValue));
+                } catch {
+                    setFavoriteItems([]);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        // Also listen for custom events in case localStorage is updated in the same tab
+        const handleFavoritesUpdate = () => {
+            const savedFavorites = localStorage.getItem('ecomm_favorites');
+            if (savedFavorites) {
+                try {
+                    setFavoriteItems(JSON.parse(savedFavorites));
+                } catch {
+                    setFavoriteItems([]);
+                }
+            }
+        };
+
+        window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
+        };
+    }, []);
+
     const saveFavorites = (items: FavoriteSlide[]) => {
         setFavoriteItems(items);
         if (typeof window === 'undefined') return;

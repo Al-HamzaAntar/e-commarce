@@ -84,6 +84,8 @@ export default function Home({ products, heroItems }: HomeProps) {
         setCartItems(items);
         if (typeof window !== 'undefined') {
             localStorage.setItem('ecomm_cart', JSON.stringify(items));
+            // Dispatch custom event to notify other components of cart changes
+            window.dispatchEvent(new CustomEvent('cartUpdated'));
         }
     };
 
@@ -91,6 +93,8 @@ export default function Home({ products, heroItems }: HomeProps) {
         setFavoriteItems(items);
         if (typeof window !== 'undefined') {
             localStorage.setItem('ecomm_favorites', JSON.stringify(items));
+            // Dispatch custom event to notify other components of favorites changes
+            window.dispatchEvent(new CustomEvent('favoritesUpdated'));
         }
     };
 
@@ -396,160 +400,121 @@ export default function Home({ products, heroItems }: HomeProps) {
                 </header>
 
                 {/* قسم البطل */}
-                <section className="relative overflow-hidden">
-                    {/* خلفية متدرجة */}
-                    <div className="from-primary/5 via-background to-accent/30 absolute inset-0 bg-gradient-to-bl" />
-                    <div className="bg-primary/10 absolute top-20 -left-20 h-72 w-72 rounded-full blur-3xl" />
-                    <div className="bg-chart-4/10 absolute -right-20 -bottom-10 h-72 w-72 rounded-full blur-3xl" />
+                <section className="relative h-screen overflow-hidden">
+                    {/* Slider Container */}
+                    <div
+                        ref={heroSliderRef}
+                        onMouseEnter={() => setIsHeroPaused(true)}
+                        onMouseLeave={() => setIsHeroPaused(false)}
+                        className="scrollbar-none flex h-full snap-x snap-mandatory overflow-x-auto scroll-smooth"
+                    >
+                        {heroCards.length > 0 ? (
+                            heroCards.map((item) => {
+                                const isProduct = isProductSlide(item);
+                                return (
+                                    <div key={isProduct ? item.id : item.id} className="relative h-full min-w-full flex-shrink-0 snap-center">
+                                        {/* Full Background Image */}
+                                        <div
+                                            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                            style={{
+                                                backgroundImage: `url(${
+                                                    item.image ||
+                                                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvPC90ZXh0Pjwvc3ZnPg=='
+                                                })`,
+                                            }}
+                                        />
+                                        {/* Overlay */}
+                                        <div className="absolute inset-0 bg-black/40" />
 
-                    <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="border-primary/20 bg-primary/5 text-primary mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
-                                <Sparkles className="h-3.5 w-3.5" />
-                                عروض خصم مميزة
-                            </div>
-                            <h1 className="max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                                اكتشف أفضل
-                                <span className="relative mr-2">
-                                    <span className="from-primary to-chart-4 bg-gradient-to-r bg-clip-text text-transparent"> العروض</span>
-                                </span>
-                            </h1>
-                            <p className="text-muted-foreground mt-6 max-w-2xl text-base sm:text-lg md:text-xl">
-                                تصفح الآن بطاقات التخفيضات العصرية والمميزة ضمن قسم البطل. تمرير سريع للوصول لأفضل العروض.
-                            </p>
-                        </div>
-
-                        <div className="border-border/70 bg-background/80 mt-12 rounded-[2rem] border p-5 shadow-xl shadow-black/5">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <p className="text-primary/90 text-sm font-medium tracking-[0.3em] uppercase">العروض المميزة</p>
-                                    <h2 className="text-foreground mt-2 text-2xl font-semibold sm:text-3xl">بطاقات التخفيض</h2>
-                                </div>
-                                <div className="hidden items-center gap-2 sm:flex">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleHeroSlide('prev')}
-                                        className="border-border/70 bg-card text-foreground hover:bg-accent hover:text-foreground inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors"
-                                        aria-label="السابق"
-                                    >
-                                        <ChevronLeft className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleHeroSlide('next')}
-                                        className="border-border/70 bg-card text-foreground hover:bg-accent hover:text-foreground inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors"
-                                        aria-label="التالي"
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div
-                                ref={heroSliderRef}
-                                onMouseEnter={() => setIsHeroPaused(true)}
-                                onMouseLeave={() => setIsHeroPaused(false)}
-                                className="scrollbar-none mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-2 pb-2"
-                            >
-                                {heroCards.length > 0 ? (
-                                    heroCards.map((item) => {
-                                        const isProduct = isProductSlide(item);
-                                        return (
-                                            <div
-                                                key={isProduct ? item.id : item.id}
-                                                className="border-border/70 bg-card min-w-[320px] shrink-0 snap-center overflow-hidden rounded-[2rem] border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                                            >
-                                                <div className="bg-accent/10 relative overflow-hidden">
-                                                    <img
-                                                        src={
-                                                            item.image ||
-                                                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvPC90ZXh0Pjwvc3ZnPg=='
-                                                        }
-                                                        alt={isProduct ? item.name : item.title}
-                                                        className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
-                                                    />
-                                                    <div className="absolute inset-x-0 top-4 flex items-center justify-between px-4">
-                                                        <div className="rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-                                                            {isProduct ? `خصم ${item.discount}%` : item.badge_text || 'عرض خاص'}
-                                                        </div>
-                                                    </div>
+                                        {/* Content Overlay */}
+                                        <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center text-white">
+                                            <div className="max-w-4xl">
+                                                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm">
+                                                    <Sparkles className="h-3.5 w-3.5" />
+                                                    {isProduct ? `خصم ${item.discount}%` : item.badge_text || 'عرض خاص'}
                                                 </div>
-                                                <div className="p-5">
-                                                    <h3 className="text-foreground mb-2 text-xl font-semibold">
-                                                        {isProduct ? item.name : item.title}
-                                                    </h3>
-                                                    {item.description && (
-                                                        <p className="text-muted-foreground mb-4 line-clamp-3 text-sm">{item.description}</p>
-                                                    )}
+                                                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+                                                    {isProduct ? item.name : item.title}
+                                                </h1>
+                                                {item.description && (
+                                                    <p className="mt-6 max-w-2xl text-base text-white/90 sm:text-lg md:text-xl">{item.description}</p>
+                                                )}
+                                                <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
                                                     {isProduct ? (
-                                                        <div className="bg-primary/5 text-foreground/90 rounded-3xl p-4 text-sm">
-                                                            سعر قبل الخصم:{' '}
-                                                            <span className="text-muted-foreground line-through">${item.price.toFixed(2)}</span>
-                                                            <div className="text-foreground mt-2 text-lg font-semibold">
-                                                                ${item.discountedPrice.toFixed(2)}
-                                                            </div>
-                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => addToCart(item)}
+                                                            className="group flex w-full items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-black shadow-lg shadow-white/25 transition-all hover:bg-white/90 hover:shadow-xl hover:shadow-white/30 sm:w-auto"
+                                                        >
+                                                            إضافة للعربة
+                                                            <ShoppingBag className="h-4 w-4" />
+                                                        </button>
                                                     ) : (
                                                         item.link &&
                                                         item.link_text && (
                                                             <a
                                                                 href={item.link}
-                                                                className="bg-primary text-primary-foreground hover:bg-primary/90 mt-4 inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-colors"
+                                                                className="group flex w-full items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-semibold text-black shadow-lg shadow-white/25 transition-all hover:bg-white/90 hover:shadow-xl hover:shadow-white/30 sm:w-auto"
                                                             >
                                                                 {item.link_text}
                                                             </a>
                                                         )
                                                     )}
-
-                                                    <div className="mt-4 flex flex-wrap items-center gap-2">
-                                                        {isProduct && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => addToCart(item)}
-                                                                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-2xl px-4 py-2 text-sm font-semibold transition-colors"
-                                                            >
-                                                                إضافة للعربة
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => toggleFavorite(item)}
-                                                            className={`rounded-2xl px-4 py-2 text-sm font-semibold transition-colors ${
-                                                                isFavorite(item)
-                                                                    ? 'bg-accent text-foreground hover:bg-accent/90'
-                                                                    : 'border-border/70 bg-card text-foreground hover:bg-accent hover:text-foreground border'
-                                                            }`}
-                                                        >
-                                                            {isFavorite(item) ? 'إزالة من المفضلة' : 'أضف للمفضلة'}
-                                                        </button>
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleFavorite(item)}
+                                                        className="w-full rounded-xl border border-white/70 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-white/10 sm:w-auto"
+                                                    >
+                                                        {isFavorite(item) ? 'إزالة من المفضلة' : 'أضف للمفضلة'}
+                                                    </button>
                                                 </div>
                                             </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="border-border/70 bg-card text-muted-foreground col-span-3 rounded-[2rem] border p-10 text-center text-sm">
-                                        لا توجد عروض متاحة حالياً.
+                                        </div>
                                     </div>
-                                )}
+                                );
+                            })
+                        ) : (
+                            <div className="flex min-w-full items-center justify-center bg-gray-900 text-white">
+                                <div className="text-center">
+                                    <p className="text-lg font-semibold">لا توجد عروض متاحة حالياً.</p>
+                                </div>
                             </div>
+                        )}
+                    </div>
 
-                            <div className="mt-6 flex items-center justify-center gap-2 sm:hidden">
-                                {heroCards.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        className={`h-2.5 w-2.5 rounded-full transition-colors ${index === heroSlideIndex ? 'bg-primary' : 'bg-muted-foreground/50'}`}
-                                        aria-label={`العرض ${index + 1}`}
-                                        type="button"
-                                        onClick={() => {
-                                            if (!heroSliderRef.current) return;
-                                            const card = heroSliderRef.current.children[index] as HTMLElement;
-                                            card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                    {/* Navigation Arrows */}
+                    <div className="absolute top-1/2 left-4 z-20 -translate-y-1/2">
+                        <button
+                            type="button"
+                            onClick={() => handleHeroSlide('prev')}
+                            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                            aria-label="السابق"
+                        >
+                            <ChevronLeft className="h-6 w-6" />
+                        </button>
+                    </div>
+                    <div className="absolute top-1/2 right-4 z-20 -translate-y-1/2">
+                        <button
+                            type="button"
+                            onClick={() => handleHeroSlide('next')}
+                            className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                            aria-label="التالي"
+                        >
+                            <ChevronRight className="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    {/* Dots Indicator */}
+                    <div className="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+                        {heroCards.map((_, index) => (
+                            <button
+                                key={index}
+                                className={`h-3 w-3 rounded-full transition-colors ${index === heroSlideIndex ? 'bg-white' : 'bg-white/50'}`}
+                                aria-label={`العرض ${index + 1}`}
+                                type="button"
+                                onClick={() => scrollToHeroIndex(index)}
+                            />
+                        ))}
                     </div>
                 </section>
 

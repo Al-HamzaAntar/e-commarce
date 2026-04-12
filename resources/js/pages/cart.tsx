@@ -31,6 +31,42 @@ export default function Cart() {
         }
     }, []);
 
+    // Listen for localStorage changes to sync cart state across pages
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'ecomm_cart' && e.newValue) {
+                try {
+                    setCartItems(JSON.parse(e.newValue));
+                } catch {
+                    setCartItems([]);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        // Also listen for custom events in case localStorage is updated in the same tab
+        const handleCartUpdate = () => {
+            const savedCart = localStorage.getItem('ecomm_cart');
+            if (savedCart) {
+                try {
+                    setCartItems(JSON.parse(savedCart));
+                } catch {
+                    setCartItems([]);
+                }
+            }
+        };
+
+        window.addEventListener('cartUpdated', handleCartUpdate);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('cartUpdated', handleCartUpdate);
+        };
+    }, []);
+
     const saveCart = (items: CartItem[]) => {
         setCartItems(items);
         if (typeof window === 'undefined') return;
