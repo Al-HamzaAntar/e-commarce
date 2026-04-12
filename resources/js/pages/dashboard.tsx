@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { DollarSign, Package, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { DollarSign, Package, ShoppingCart, Star, TrendingUp, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -80,6 +80,64 @@ export default function Dashboard({ stats, recentProducts }: DashboardProps) {
                             </div>
                         );
                     })}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="border-border/60 bg-card rounded-2xl border p-6">
+                    <h2 className="mb-4 font-semibold">إجراءات سريعة</h2>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <Link
+                            href="/products/create"
+                            className="border-border/60 bg-accent/50 hover:bg-accent flex flex-col items-center gap-3 rounded-xl border p-4 transition-colors"
+                        >
+                            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-xl">
+                                <Package className="text-primary h-6 w-6" />
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm font-medium">إضافة منتج</div>
+                                <div className="text-muted-foreground text-xs">أضف منتج جديد للمتجر</div>
+                            </div>
+                        </Link>
+
+                        <Link
+                            href="/hero-items"
+                            className="border-border/60 bg-accent/50 hover:bg-accent flex flex-col items-center gap-3 rounded-xl border p-4 transition-colors"
+                        >
+                            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-xl">
+                                <Star className="text-primary h-6 w-6" />
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm font-medium">عناصر البطل</div>
+                                <div className="text-muted-foreground text-xs">إدارة القسم البطولي</div>
+                            </div>
+                        </Link>
+
+                        <Link
+                            href="/products"
+                            className="border-border/60 bg-accent/50 hover:bg-accent flex flex-col items-center gap-3 rounded-xl border p-4 transition-colors"
+                        >
+                            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-xl">
+                                <ShoppingCart className="text-primary h-6 w-6" />
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm font-medium">إدارة المنتجات</div>
+                                <div className="text-muted-foreground text-xs">عرض وتعديل المنتجات</div>
+                            </div>
+                        </Link>
+
+                        <Link
+                            href="/settings/profile"
+                            className="border-border/60 bg-accent/50 hover:bg-accent flex flex-col items-center gap-3 rounded-xl border p-4 transition-colors"
+                        >
+                            <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-xl">
+                                <Users className="text-primary h-6 w-6" />
+                            </div>
+                            <div className="text-center">
+                                <div className="text-sm font-medium">الملف الشخصي</div>
+                                <div className="text-muted-foreground text-xs">إدارة حسابك</div>
+                            </div>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* أحدث المنتجات */}

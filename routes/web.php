@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\HeroItemController;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     // Product management routes
     Route::resource('products', ProductController::class);
+
+    // Hero items management routes
+    Route::resource('hero-items', HeroItemController::class);
 
     Route::get('dashboard', function () {
         $totalProducts = Product::count();

@@ -1,34 +1,96 @@
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Headphones, Heart, Menu, RotateCcw, Search, Shield, ShoppingBag, Sparkles, Star, Truck, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Product {
     id: number;
     name: string;
     description: string;
     price: number;
-    image: string;
+    image?: string;
     category: string;
     stock: number;
 }
 
-interface HomeProps {
-    products: Product[];
+interface HeroItem {
+    id: number;
+    title: string;
+    description?: string;
+    image?: string;
+    link?: string;
+    link_text?: string;
+    badge_text?: string;
+    badge_color: string;
+    is_active: boolean;
+    sort_order: number;
 }
 
-export default function Home({ products }: HomeProps) {
+interface ProductSlide extends Product {
+    discount: number;
+    discountedPrice: number;
+}
+
+type HeroSlide = HeroItem | ProductSlide;
+
+interface HomeProps {
+    products: Product[];
+    heroItems: HeroItem[];
+}
+
+export default function Home({ products, heroItems }: HomeProps) {
     const { auth } = usePage<SharedData>().props;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('الكل');
     const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+    const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+    const heroSliderRef = useRef<HTMLDivElement | null>(null);
 
     const categories = useMemo(() => {
-        const cats = ['الكل', ...new Set(products.map((p) => p.category))];
+        const cats = ['الكل', ...new Set(products.map((p) => p.category).filter(Boolean))];
         return cats;
     }, [products]);
+
+    const heroProducts = useMemo<ProductSlide[]>(() => {
+        return products
+            .filter((product) => product.image && product.image.trim().length > 0)
+            .slice(0, 3)
+            .map((product, index) => ({
+                ...product,
+                discount: 10 + (index + 1) * 5,
+                discountedPrice: Number((product.price * (1 - (10 + (index + 1) * 5) / 100)).toFixed(2)),
+            }));
+    }, [products]);
+
+    const heroCards: HeroSlide[] = heroItems.length > 0 ? heroItems : heroProducts;
+
+    const isProductSlide = (item: HeroSlide): item is ProductSlide => 'discount' in item;
+
+    const handleHeroSlide = (direction: 'prev' | 'next') => {
+        if (!heroSliderRef.current) return;
+        const container = heroSliderRef.current;
+        const scrollWidth = container.clientWidth - 96;
+        const scrollTo = direction === 'prev' ? container.scrollLeft - scrollWidth : container.scrollLeft + scrollWidth;
+        container.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        if (!heroSliderRef.current) return;
+        const container = heroSliderRef.current;
+        const onScroll = () => {
+            const scrollLeft = container.scrollLeft;
+            const cardWidth = container.firstElementChild?.clientWidth ?? 320;
+            const index = Math.round(scrollLeft / (cardWidth + 24));
+            setHeroSlideIndex(Math.min(Math.max(index, 0), heroCards.length - 1));
+        };
+
+        container.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        return () => container.removeEventListener('scroll', onScroll);
+    }, [heroCards.length]);
 
     const filteredProducts = useMemo(() => {
         let result = products;
@@ -46,7 +108,7 @@ export default function Home({ products }: HomeProps) {
 
     return (
         <>
-            <Head title="المتجر - الرئيسية">
+            <Head title="متاجرك - الرئيسية">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
             </Head>
@@ -78,7 +140,7 @@ export default function Home({ products }: HomeProps) {
                                 <div className="bg-primary flex h-9 w-9 items-center justify-center rounded-xl">
                                     <ShoppingBag className="text-primary-foreground h-5 w-5" />
                                 </div>
-                                <span className="text-xl font-bold tracking-tight">شوب فايب</span>
+                                <span className="text-xl font-bold tracking-tight">متاجرك</span>
                             </Link>
 
                             {/* روابط التنقل للديسكتوب */}
@@ -244,51 +306,123 @@ export default function Home({ products }: HomeProps) {
                         <div className="flex flex-col items-center text-center">
                             <div className="border-primary/20 bg-primary/5 text-primary mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
                                 <Sparkles className="h-3.5 w-3.5" />
-                                تشكيلة جديدة متوفرة
+                                عروض خصم مميزة
                             </div>
                             <h1 className="max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                                اكتشف
+                                اكتشف أفضل
                                 <span className="relative mr-2">
-                                    <span className="from-primary to-chart-4 bg-gradient-to-r bg-clip-text text-transparent"> أناقتك</span>
+                                    <span className="from-primary to-chart-4 bg-gradient-to-r bg-clip-text text-transparent"> العروض</span>
                                 </span>
                             </h1>
                             <p className="text-muted-foreground mt-6 max-w-2xl text-base sm:text-lg md:text-xl">
-                                تشكيلات منتقاة من المنتجات الفاخرة المصممة لأسلوب الحياة العصري. حرفية عالية الجودة تلتقي بالتصميم المعاصر.
+                                تصفح الآن بطاقات التخفيضات العصرية والمميزة ضمن قسم البطل. تمرير سريع للوصول لأفضل العروض.
                             </p>
-                            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
-                                <button
-                                    onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
-                                    className="group bg-primary text-primary-foreground shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/30 flex w-full items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-sm font-semibold shadow-lg transition-all hover:shadow-xl sm:w-auto"
-                                >
-                                    تسوق الآن
-                                    {document.documentElement.dir === 'rtl' ? (
-                                        <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                                    ) : (
-                                        <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                                    )}
-                                </button>
-                                <button className="border-border text-foreground hover:bg-accent w-full rounded-xl border px-7 py-3.5 text-sm font-semibold transition-all sm:w-auto">
-                                    عرض المجموعات
-                                </button>
+                        </div>
+
+                        <div className="border-border/70 bg-background/80 mt-12 rounded-[2rem] border p-5 shadow-xl shadow-black/5">
+                            <div className="flex items-center justify-between gap-4">
+                                <div>
+                                    <p className="text-primary/90 text-sm font-medium tracking-[0.3em] uppercase">العروض المميزة</p>
+                                    <h2 className="text-foreground mt-2 text-2xl font-semibold sm:text-3xl">بطاقات التخفيض</h2>
+                                </div>
+                                <div className="hidden items-center gap-2 sm:flex">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleHeroSlide('prev')}
+                                        className="border-border/70 bg-card text-foreground hover:bg-accent hover:text-foreground inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors"
+                                        aria-label="السابق"
+                                    >
+                                        <ChevronLeft className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleHeroSlide('next')}
+                                        className="border-border/70 bg-card text-foreground hover:bg-accent hover:text-foreground inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors"
+                                        aria-label="التالي"
+                                    >
+                                        <ChevronRight className="h-5 w-5" />
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* الإحصائيات */}
-                            <div className="mt-16 grid grid-cols-3 gap-6 sm:gap-12">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold sm:text-3xl">+2 ألف</div>
-                                    <div className="text-muted-foreground mt-1 text-xs sm:text-sm">منتج</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold sm:text-3xl">+15 ألف</div>
-                                    <div className="text-muted-foreground mt-1 text-xs sm:text-sm">عميل سعيد</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold sm:text-3xl">4.9</div>
-                                    <div className="text-muted-foreground mt-1 flex items-center justify-center gap-1 text-xs sm:text-sm">
-                                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                                        التقييم
+                            <div
+                                ref={heroSliderRef}
+                                className="scrollbar-none mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth px-2 pb-2"
+                            >
+                                {heroCards.length > 0 ? (
+                                    heroCards.map((item, index) => {
+                                        const isProduct = isProductSlide(item);
+                                        return (
+                                            <div
+                                                key={isProduct ? item.id : item.id}
+                                                className="border-border/70 bg-card min-w-[320px] shrink-0 snap-center overflow-hidden rounded-[2rem] border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                            >
+                                                <div className="bg-accent/10 relative overflow-hidden">
+                                                    <img
+                                                        src={
+                                                            item.image ||
+                                                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvPC90ZXh0Pjwvc3ZnPg=='
+                                                        }
+                                                        alt={isProduct ? item.name : item.title}
+                                                        className="h-56 w-full object-cover transition duration-500 group-hover:scale-105"
+                                                    />
+                                                    <div className="absolute inset-x-0 top-4 flex items-center justify-between px-4">
+                                                        <div className="rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                                                            {isProduct ? `خصم ${item.discount}%` : item.badge_text || 'عرض خاص'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="p-5">
+                                                    <h3 className="text-foreground mb-2 text-xl font-semibold">
+                                                        {isProduct ? item.name : item.title}
+                                                    </h3>
+                                                    {item.description && (
+                                                        <p className="text-muted-foreground mb-4 line-clamp-3 text-sm">{item.description}</p>
+                                                    )}
+                                                    {isProduct ? (
+                                                        <div className="bg-primary/5 text-foreground/90 rounded-3xl p-4 text-sm">
+                                                            سعر قبل الخصم:{' '}
+                                                            <span className="text-muted-foreground line-through">${item.price.toFixed(2)}</span>
+                                                            <div className="text-foreground mt-2 text-lg font-semibold">
+                                                                ${item.discountedPrice.toFixed(2)}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        item.link &&
+                                                        item.link_text && (
+                                                            <a
+                                                                href={item.link}
+                                                                className="bg-primary text-primary-foreground hover:bg-primary/90 mt-4 inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition-colors"
+                                                            >
+                                                                {item.link_text}
+                                                            </a>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="border-border/70 bg-card text-muted-foreground col-span-3 rounded-[2rem] border p-10 text-center text-sm">
+                                        لا توجد عروض متاحة حالياً.
                                     </div>
-                                </div>
+                                )}
+                            </div>
+
+                            <div className="mt-6 flex items-center justify-center gap-2 sm:hidden">
+                                {heroCards.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        className={`h-2.5 w-2.5 rounded-full transition-colors ${index === heroSlideIndex ? 'bg-primary' : 'bg-muted-foreground/50'}`}
+                                        aria-label={`العرض ${index + 1}`}
+                                        type="button"
+                                        onClick={() => {
+                                            if (!heroSliderRef.current) return;
+                                            const card = heroSliderRef.current.children[index] as HTMLElement;
+                                            card?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                        }}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -344,7 +478,10 @@ export default function Home({ products }: HomeProps) {
                                         {/* الصورة */}
                                         <div className="bg-accent/50 relative aspect-square overflow-hidden">
                                             <img
-                                                src={product.image}
+                                                src={
+                                                    product.image ||
+                                                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='
+                                                }
                                                 alt={product.name}
                                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                 loading="lazy"
@@ -516,7 +653,7 @@ export default function Home({ products }: HomeProps) {
                                     <div className="bg-primary flex h-9 w-9 items-center justify-center rounded-xl">
                                         <ShoppingBag className="text-primary-foreground h-5 w-5" />
                                     </div>
-                                    <span className="text-lg font-bold tracking-tight">شوب فايب</span>
+                                    <span className="text-lg font-bold tracking-tight">متاجرك</span>
                                 </Link>
                                 <p className="text-muted-foreground mt-4 max-w-xs text-sm leading-relaxed">
                                     وجهتك للمنتجات الفاخرة والأسلوب العصري. منتقاة بعناية، يتم توصيلها بحب.
@@ -563,7 +700,7 @@ export default function Home({ products }: HomeProps) {
                         </div>
 
                         <div className="border-border/50 mt-10 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
-                            <p className="text-muted-foreground text-xs">&copy; {new Date().getFullYear()} شوب فايب. جميع الحقوق محفوظة.</p>
+                            <p className="text-muted-foreground text-xs">&copy; {new Date().getFullYear()} متاجرك. جميع الحقوق محفوظة.</p>
                             <div className="flex items-center gap-4">
                                 <a href="#" className="text-muted-foreground hover:text-foreground text-xs transition-colors">
                                     الخصوصية

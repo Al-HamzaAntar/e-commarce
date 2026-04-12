@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             ProductSeeder::class,
+            HeroItemSeeder::class,
         ]);
 
         User::factory()->create([

@@ -24,7 +24,7 @@ export default function AuthSimpleLayout({ children, title, description }: Props
                             <div className="bg-primary shadow-primary/25 flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg">
                                 <ShoppingBag className="text-primary-foreground h-6 w-6" />
                             </div>
-                            <span className="text-lg font-bold tracking-tight">شوب فايب</span>
+                            <span className="text-lg font-bold tracking-tight">متاجرك</span>
                         </Link>
 
                         <div className="space-y-2 text-center">
