@@ -11,10 +11,10 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/cart', function () {
-    return Inertia::render('Cart');
+    return Inertia::render('cart');
 })->name('cart');
 Route::get('/favorites', function () {
-    return Inertia::render('Favorites');
+    return Inertia::render('favorites');
 })->name('favorites');
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -97,7 +97,7 @@ export default function ProductsIndex({ products }: ProductsIndexProps) {
                                             </Link>
                                             <button
                                                 onClick={() => handleDelete(product.id)}
-                                                className="text-muted-foreground hover:bg-destructive hover:text-destructive-foreground rounded-lg p-2"
+                                                className="text-muted-foreground hover:bg-destructive hover:text-foreground rounded-lg p-2"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>

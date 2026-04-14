@@ -84,8 +84,7 @@ export default function Home({ products, heroItems }: HomeProps) {
         setCartItems(items);
         if (typeof window !== 'undefined') {
             localStorage.setItem('ecomm_cart', JSON.stringify(items));
-            // Dispatch custom event to notify other components of cart changes
-            window.dispatchEvent(new CustomEvent('cartUpdated'));
+            window.dispatchEvent(new Event('cartUpdated'));
         }
     };
 
@@ -93,18 +92,24 @@ export default function Home({ products, heroItems }: HomeProps) {
         setFavoriteItems(items);
         if (typeof window !== 'undefined') {
             localStorage.setItem('ecomm_favorites', JSON.stringify(items));
-            // Dispatch custom event to notify other components of favorites changes
-            window.dispatchEvent(new CustomEvent('favoritesUpdated'));
+            window.dispatchEvent(new Event('favoritesUpdated'));
         }
     };
 
     const addToCart = (product: ProductSlide) => {
-        const existing = cartItems.find((item) => item.id === product.id);
-        const nextItems = existing
-            ? cartItems.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
-            : [...cartItems, { ...product, quantity: 1 }];
+        setCartItems((currentItems) => {
+            const existing = currentItems.find((item) => item.id === product.id);
+            const nextItems = existing
+                ? currentItems.map((item) => (item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item))
+                : [...currentItems, { ...product, quantity: 1 }];
 
-        saveCartItems(nextItems);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('ecomm_cart', JSON.stringify(nextItems));
+                window.dispatchEvent(new Event('cartUpdated'));
+            }
+
+            return nextItems;
+        });
     };
 
     const toggleFavorite = (item: HeroSlide) => {
@@ -273,7 +278,7 @@ export default function Home({ products, heroItems }: HomeProps) {
 
                                 <Link
                                     href={route('favorites')}
-                                    className="text-foreground/70 hover:bg-accent hover:text-foreground relative hidden rounded-lg p-2 transition-colors sm:inline-flex"
+                                    className="text-foreground/70 hover:bg-accent hover:text-foreground relative rounded-lg p-2 transition-colors"
                                     aria-label="المفضلة"
                                 >
                                     <Heart className="h-5 w-5" />
@@ -351,6 +356,33 @@ export default function Home({ products, heroItems }: HomeProps) {
                             }`}
                         >
                             <nav className="border-border/50 flex flex-col gap-1 border-t pt-3">
+                                {/* روابط التنقل الرئيسية للموبايل */}
+                                <div className="flex items-center justify-center gap-4 pb-2">
+                                    <Link
+                                        href={route('favorites')}
+                                        className="text-foreground/70 hover:bg-accent hover:text-foreground relative rounded-lg p-2 transition-colors"
+                                        aria-label="المفضلة"
+                                    >
+                                        <Heart className="h-5 w-5" />
+                                        {favoriteItems.length > 0 && (
+                                            <span className="bg-primary text-primary-foreground absolute -top-0.5 -left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold">
+                                                {favoriteItems.length}
+                                            </span>
+                                        )}
+                                    </Link>
+                                    <Link
+                                        href={route('cart')}
+                                        className="text-foreground/70 hover:bg-accent hover:text-foreground relative rounded-lg p-2 transition-colors"
+                                        aria-label="سلة التسوق"
+                                    >
+                                        <ShoppingBag className="h-5 w-5" />
+                                        {cartItems.length > 0 && (
+                                            <span className="bg-primary text-primary-foreground absolute -top-0.5 -left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full text-[10px] font-bold">
+                                                {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </div>
                                 {categories.map((cat) => (
                                     <button
                                         key={cat}
@@ -717,7 +749,7 @@ export default function Home({ products, heroItems }: HomeProps) {
                         <div className="flex flex-col items-center text-center">
                             <h2 className="text-primary-foreground text-2xl font-bold sm:text-3xl">ابقَ على اطلاع</h2>
                             <p className="text-primary-foreground/80 mt-3 max-w-md text-sm sm:text-base">
-                                اشترك في نشرتنا البريدية للحصول على عروض حصرية، منتجات جديدة، وإلهام أسلوبي.
+                                اشترك في نشرتنا البريدية للحصول على عروض حصرية، منتجات وخدمات جديدة.
                             </p>
                             <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
                                 <input
@@ -745,9 +777,7 @@ export default function Home({ products, heroItems }: HomeProps) {
                                     </div>
                                     <span className="text-lg font-bold tracking-tight">متاجرك</span>
                                 </Link>
-                                <p className="text-muted-foreground mt-4 max-w-xs text-sm leading-relaxed">
-                                    وجهتك للمنتجات الفاخرة والأسلوب العصري. منتقاة بعناية، يتم توصيلها بحب.
-                                </p>
+                                <p className="text-muted-foreground mt-4 max-w-xs text-sm leading-relaxed">منتجاتك وخدماتك</p>
                             </div>
 
                             {/* الروابط */}
