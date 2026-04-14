@@ -1,5 +1,5 @@
 import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, Headphones, Heart, Menu, RotateCcw, Search, Shield, ShoppingBag, Sparkles, Star, Truck, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -110,6 +110,9 @@ export default function Home({ products, heroItems }: HomeProps) {
 
             return nextItems;
         });
+
+        // Navigate to cart page
+        router.visit(route('cart'));
     };
 
     const toggleFavorite = (item: HeroSlide) => {
@@ -120,6 +123,32 @@ export default function Home({ products, heroItems }: HomeProps) {
             : [...favoriteItems, favorite];
 
         saveFavoriteItems(nextItems);
+
+        // Navigate to favorites page only when adding (not removing)
+        if (!exists) {
+            router.visit(route('favorites'));
+        }
+    };
+
+    const toggleProductFavorite = (product: Product) => {
+        // Convert product to ProductSlide format for favorites
+        const productSlide: ProductSlide = {
+            ...product,
+            discount: 0,
+            discountedPrice: product.price,
+        };
+        const favorite = toFavoriteSlide(productSlide);
+        const exists = favoriteItems.some((fav) => fav.id === favorite.id && fav.slideType === favorite.slideType);
+        const nextItems = exists
+            ? favoriteItems.filter((fav) => !(fav.id === favorite.id && fav.slideType === favorite.slideType))
+            : [...favoriteItems, favorite];
+
+        saveFavoriteItems(nextItems);
+
+        // Navigate to favorites page only when adding (not removing)
+        if (!exists) {
+            router.visit(route('favorites'));
+        }
     };
 
     const isFavorite = (item: HeroSlide) => {
@@ -619,7 +648,10 @@ export default function Home({ products, heroItems }: HomeProps) {
                                                 </button>
                                             </div>
                                             {/* زر المفضلة */}
-                                            <button className="absolute top-3 left-3 rounded-full bg-white/90 p-2 text-gray-600 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-red-500 hover:shadow-md">
+                                            <button
+                                                onClick={() => toggleProductFavorite(product)}
+                                                className="absolute top-3 left-3 rounded-full bg-white/90 p-2 text-gray-600 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:text-red-500 hover:shadow-md"
+                                            >
                                                 <Heart className="h-4 w-4" />
                                             </button>
                                             {/* شارة المخزون */}
@@ -657,6 +689,14 @@ export default function Home({ products, heroItems }: HomeProps) {
                                                     </span>
                                                 </div>
                                                 <button
+                                                    onClick={() => {
+                                                        const productSlide: ProductSlide = {
+                                                            ...product,
+                                                            discount: 0,
+                                                            discountedPrice: product.price,
+                                                        };
+                                                        addToCart(productSlide);
+                                                    }}
                                                     className={`rounded-xl px-3.5 py-2 text-xs font-semibold transition-all sm:text-sm ${
                                                         product.stock > 0
                                                             ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-primary/25 shadow-sm hover:shadow-md'
