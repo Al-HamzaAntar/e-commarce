@@ -10,7 +10,7 @@ RUN apk update && apk add --no-cache \
     libzip-dev \
     libpng-dev \
     libjpeg-turbo-dev \
-    libfreetype6-dev \
+    freetype-dev \
     libonig-dev \
     libxml2-dev \
     zip \
