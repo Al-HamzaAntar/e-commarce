@@ -24,11 +24,11 @@ RUN apk update && apk add --no-cache \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install bc math -j$(nproc) \
+    && docker-php-ext-install -j$(nproc) \
+    bcmath \
     gd \
     pdo_mysql \
     mysqli \
-    bcmath \
     zip \
     opcache \
     xml \
@@ -38,7 +38,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     pdo \
     dom \
     filter \
-    gd \
     hash \
     json \
     mbstring \
