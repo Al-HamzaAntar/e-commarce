@@ -24,7 +24,7 @@ RUN apk update && apk add --no-cache \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+    && docker-php-ext-install bc math -j$(nproc) \
     gd \
     pdo_mysql \
     mysqli \
