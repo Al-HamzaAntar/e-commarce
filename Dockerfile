@@ -4,9 +4,9 @@ FROM php:8.2-fpm-alpine
 # Set working directory
 WORKDIR /var/www/html
 
-RUN apk update
+
 # Install system dependencies
-RUN apk add --no-cache \
+RUN apk update && RUN apk add --no-cache \
     libzip-dev \
     libpng-dev \
     libjpeg-turbo-dev \
