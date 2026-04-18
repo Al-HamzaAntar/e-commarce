@@ -1,4 +1,4 @@
-import { type SharedData } from '@/types';
+
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ShoppingBag, Trash2, MessageCircle, X, CheckCircle2, Package, Truck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,7 +21,6 @@ interface Order {
     createdAt: string;
     customerName?: string;
     customerPhone?: string;
-    customerAddress?: string;
 }
 
 export default function Cart() {
@@ -34,7 +33,7 @@ export default function Cart() {
     const [showOrderForm, setShowOrderForm] = useState(false);
     const [showOrders, setShowOrders] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-    
+
     const WHATSAPP_NUMBER = '+967 772537330';
 
     useEffect(() => {
@@ -133,7 +132,7 @@ export default function Cart() {
         message += `*الهاتف:* ${order.customerPhone || 'غير محدد'}\n`;
         message += `*العنوان:* ${order.customerAddress || 'غير محدد'}\n\n`;
         message += `*المنتجات:*\n`;
-        
+
         order.items.forEach((item, index) => {
             message += `${index + 1}. ${item.name}\n`;
             message += `   الكمية: ${item.quantity}\n`;
@@ -204,7 +203,7 @@ export default function Cart() {
         const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER.replace(/\s/g, '')}?text=${encodedMessage}`;
 
         window.open(whatsappUrl, '_blank');
-        
+
         // Clear cart after order
         saveCart([]);
         setShowOrderForm(false);
@@ -384,14 +383,7 @@ export default function Cart() {
                                 <button
                                     type="button"
                                     onClick={() => setShowOrderForm(true)}
-                                    className="bg-primary text-primary-foreground hover:bg-primary/90 mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-colors"
-                                >
-                                    متابعة الدفع
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowOrderForm(true)}
-                                    className="bg-green-600 text-white hover:bg-green-700 mt-3 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                                    className="bg-green-600 text-white hover:bg-green-700 mt-6 w-full rounded-2xl px-4 py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                                 >
                                     <MessageCircle className="h-4 w-4" />
                                     طلب عبر واتساب
