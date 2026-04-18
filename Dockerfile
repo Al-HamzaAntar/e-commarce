@@ -6,7 +6,7 @@ WORKDIR /var/www/html
 
 
 # Install system dependencies
-RUN apk update && RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
     libzip-dev \
     libpng-dev \
     libjpeg-turbo-dev \
