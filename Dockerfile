@@ -11,7 +11,6 @@ RUN apk update && apk add --no-cache \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
-    libonig-dev \
     libxml2-dev \
     zip \
     unzip \
