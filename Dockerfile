@@ -7,6 +7,7 @@ WORKDIR /var/www/html
 
 # Install system dependencies
 RUN apk update && apk add --no-cache \
+    gnu-libiconv \
     libzip-dev \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -24,7 +25,7 @@ RUN apk update && apk add --no-cache \
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+    docker-php-ext-configure iconv --with-iconv=/usr/local && docker-php-ext-install -j$(nproc) \
     bcmath \
     gd \
     pdo_mysql \
