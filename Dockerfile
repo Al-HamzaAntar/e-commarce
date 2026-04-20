@@ -29,7 +29,6 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     freetype-dev \
     libxml2-dev \
-    libiconv-dev \
     icu-dev \
     oniguruma-dev \
     zip \
