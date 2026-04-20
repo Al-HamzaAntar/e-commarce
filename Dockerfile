@@ -13,6 +13,8 @@ RUN npm install
 # Install Node.js dependencies
 RUN npm ci --only=production
 
+RUN npm install tailwindcss
+
 # Copy source files
 COPY . .
 
