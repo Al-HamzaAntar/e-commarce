@@ -1,0 +1,79 @@
+services:
+  # Web Service
+  - type: web
+    name: e-commarce
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://e-commarce.onrender.com
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: debug
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        value: your-mysql-host
+      - key: DB_PORT
+        value: 3306
+      - key: DB_DATABASE
+        value: your_database
+      - key: DB_USERNAME
+        value: your_username
+      - key: DB_PASSWORD
+        value: your_password
+      - key: BROADCAST_DRIVER
+        value: log
+      - key: CACHE_DRIVER
+        value: redis
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: 120
+      - key: MEMCACHED_HOST
+        value: 127.0.0.1
+      - key: REDIS_HOST
+        value: your-redis-host
+      - key: REDIS_PASSWORD
+        value: null
+      - key: REDIS_PORT
+        value: 6379
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: mailpit
+      - key: MAIL_PORT
+        value: 1025
+      - key: MAIL_USERNAME
+        value: null
+      - key: MAIL_PASSWORD
+        value: null
+      - key: MAIL_ENCRYPTION
+        value: null
+      - key: MAIL_FROM_ADDRESS
+        value: hello@example.com
+      - key: MAIL_FROM_NAME
+        value: "${APP_NAME}"
+
+databases:
+  # MySQL Database
+  - name: e-commarce-db
+    databaseName: ecommarce
+    user: ecommarce_user
+    plan: free
+
+  # Redis for caching
+  - name: e-commarce-redis
+    plan: free
